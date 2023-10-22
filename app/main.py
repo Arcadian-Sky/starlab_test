@@ -88,7 +88,7 @@ async def create_by_file(request: web.Request):
             filename = file.filename
             file_extension = filename.split(".")[-1]
 
-            if file_extension != 'xls' and file_extension != 'xlsx':
+            if file_extension != 'xlsx':
                 return web.json_response({'error': 'Invalid file format. Please upload a .xls file'}, status=400)
 
             # file_data = await file.read()
