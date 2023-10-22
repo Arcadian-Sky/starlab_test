@@ -1,30 +1,22 @@
-# Используйте базовый образ Ubuntu
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
-WORKDIR /app
-#CREATE USER starlab WITH ENCRYPTED PASSWORD 'starlabpassword';
-#GRANT ALL PRIVILEGES ON DATABASE starlabdatabase TO starlab;
-# Установите необходимые пакеты и зависимости
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libmpc-dev \
-    gcc \
-    curl \
-    postgresql \
-    && python3 -m pip install --upgrade pip
+# set work directory
+WORKDIR /usr/src/app
 
-# Установите зависимости Python из requirements.txt
-COPY requirements.txt /app/
-RUN python3 -m pip install -r /app/requirements.txt
+# install dependencies first
+COPY requirements.txt /usr/src/app
+RUN apk add --no-cache build-base \
+    && apk add --no-cache mpc1-dev \
+    && apk add --no-cache gcc curl \
+    && apk add --no-cache postgresql \
+    && python3 -m pip install --upgrade pip --no-cache-dir \
+    && python3 -m pip install -r requirements.txt --no-cache-dir
 
-# Копируйте код приложения
-COPY . /app/
+# copy the app code
+COPY . /usr/src/app/
 
-# Установите переменную окружения PYTHONPATH
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/usr/src/app
 
-# Добавьте метку
-LABEL type="starlabTest"
+LABEL type="starlabtest"
 
-# Запустите приложение
-CMD ["python", "/app/app/main.py"]
+CMD ["python", "app/main.py"]

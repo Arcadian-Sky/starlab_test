@@ -31,11 +31,8 @@ def upgrade():
     agatha_christie = Author(name="Agatha", second_name="Christie")
     session.add(agatha_christie)
     session.commit()
-
-    # Получаем ID Agatha Christie
     author_id = agatha_christie.id
 
-    # Добавляем книги с указанием автора
     books = [
         Book(name="Murder on the Orient Express", author_id=author_id, date_published="1934-01-01", genre="Mystery"),
         Book(name="The Murder of Roger Ackroyd", author_id=author_id, date_published="1926-01-01", genre="Mystery"),

@@ -1,11 +1,10 @@
 import os
 from datetime import datetime
 
-import xlrd
 import openpyxl
 from sqlalchemy import or_, and_
 from sqlmodel import select
-from app.dbConnect import getDbSession
+from dbConnect import getDbSession
 from models import *
 
 

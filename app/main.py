@@ -1,17 +1,11 @@
 import json
-import os
 import tempfile
 
-import xlrd as xlrd
 from dotenv import load_dotenv
-import aiohttp
 import aiohttp_jinja2
 from aiohttp import web
 import jinja2
-from aiohttp_jinja2 import setup as setup_jinja2
-from sqlmodel import select
 from dbConnect import createdbConnection, getDbSession
-from models import *
 from controllers import *
 
 # Загрузка переменных окружения из файла .env
@@ -25,7 +19,7 @@ async def index(request: web.Request) -> object:
     return data
 
 
-async def create_author(request):
+async def create_author(request: web.Request):
     try:
         data = await request.json()
         name = data.get('name')
@@ -41,7 +35,7 @@ async def create_author(request):
         return web.json_response({'error': str(e)}, status=500)
 
 
-async def create_book(request):
+async def create_book(request: web.Request):
     try:
         data = await request.json()
         name = data.get('name')
@@ -85,7 +79,7 @@ async def create_book(request):
         return web.json_response({'error': 'Invalid JSON in the request'}, status=400)
 
 
-async def create_by_file(request):
+async def create_by_file(request: web.Request):
     try:
         data = await request.post()
         file = data['file']
@@ -115,8 +109,9 @@ async def create_by_file(request):
         return web.json_response({'error': str(e)}, status=500)
 
 
-async def read_books(request: web.Request) -> web.Response:
+async def read_books(request: web.Request):
     data = await request.json()
+    id = data.get('id')
     name = data.get('name')
     author_id = data.get('author_id')
     date_published_start = data.get('date_published_start')
@@ -130,6 +125,8 @@ async def read_books(request: web.Request) -> web.Response:
         filters.append(Book.genre.like(f"%{genre}%"))
     if author_id:
         filters.append(Book.author_id == author_id)
+    if id:
+        filters.append(Book.id == id)
 
     if date_published_start:
         from datetime import datetime
@@ -142,8 +139,22 @@ async def read_books(request: web.Request) -> web.Response:
         filters.append(Book.date_published <= end_date)
 
     data = await get_data(filters)
-    return web.json_response(data)
+    return web.json_response(data['books'])
 
+async def read_authors(request: web.Request):
+    db_session = await getDbSession()
+
+    query_authors = select(Author)
+    result_authors = await db_session.execute(query_authors)
+    authors = result_authors.scalars().all()
+
+    serialized_authors = [{
+        'id': author.id,
+        'name': author.name,
+        'second_name': author.second_name,
+    } for author in authors]
+
+    return web.json_response(serialized_authors)
 
 async def on_startup(app):
     await createdbConnection()
@@ -151,9 +162,10 @@ async def on_startup(app):
 
 def init_routes(app):
     app.router.add_get('/', index)
-    app.router.add_post('/lists', read_books)
-    app.router.add_post('/create_book', create_book)
-    app.router.add_post('/create_author', create_author)
+    app.router.add_post('/book/create', create_book)
+    app.router.add_post('/author/create', create_author)
+    app.router.add_post('/book/list', read_books)
+    app.router.add_get('/author/list', read_authors)
     app.router.add_post('/create_by_file', create_by_file)
 
     # app.router.add_get('/books/{id}', getBook)

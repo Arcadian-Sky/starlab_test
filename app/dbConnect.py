@@ -1,10 +1,8 @@
 import os
-
+from contextlib import asynccontextmanager
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-# from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.asyncio import session
 from sqlmodel import SQLModel
 
 # Загрузка переменных окружения из файла .env
@@ -26,8 +24,9 @@ async def createdbConnection():
             await conn.run_sync(SQLModel.metadata.create_all)
     except Exception as e:
         print(f"Error initializing database: {str(e)}")
-#
-#
+
+
+
 async def getDbSession() -> AsyncSession:
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     # session = async_session()
