@@ -1,0 +1,9 @@
+POST http://localhost:8080/create_book
+Content-Type: application/json
+
+{
+  "name": "Книгаааа2",
+  "author": "Аффтарр3",
+  "genre": "Ужос5",
+  "date_published": "1997-01-15"
+}

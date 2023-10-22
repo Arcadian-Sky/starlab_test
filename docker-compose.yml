@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15.2
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+        - .:/app
+    env_file:
+      - .env
+    environment:
+        DATABASE_URL: ${DATABASE_URL}
+        PORT: ${APP_PORT}
+    tty: true
+    stdin_open: true
+volumes:
+  pgdata:

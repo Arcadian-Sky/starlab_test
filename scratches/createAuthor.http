@@ -1,0 +1,7 @@
+POST http://localhost:8080/create_author
+Content-Type: application/json
+
+{
+  "name": "Authorrity",
+  "second_name": "Surname"
+}

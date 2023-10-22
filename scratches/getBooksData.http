@@ -1,0 +1,9 @@
+POST http://localhost:8080/lists
+Content-Type: application/json
+
+{
+  "name": "Don",
+  "genre": "satire",
+  "date_published_start": "1605-01-01",
+  "date_published_end": "2012-01-01"
+}

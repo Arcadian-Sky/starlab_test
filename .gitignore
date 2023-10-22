@@ -1,0 +1,231 @@
+.idea
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Sphinx documentation
+docs/_build/
+Share
+Improve this answer
+Follow
+edited Jan 24, 2014 at 15:40
+Stephen Fuhry's user avatar
+Stephen Fuhry
+12.7k66 gold badges5656 silver badges5555 bronze badges
+answered Dec 27, 2012 at 16:58
+seanrose's user avatar
+seanrose
+8,26533 gold badges2020 silver badges2121 bronze badges
+1
+why should we ignore *.mo files? just for curiosity. are those gettext's .po files compiled on server separately ? –
+Ekin Ertaç
+ Mar 14, 2016 at 12:07
+6
+.mo files are the machine readable (binary) version of the .po files, and -as widely known- it's a lot better to keep binary files outside of a versioned repository, when you can (and you should, since including both .po and .mo means also keeping duplicated data in the repository, that the VCS cannot even "squash") –
+dappiu
+ Jun 16, 2016 at 23:26
+9
+Why not .DS_Store? –
+MaxCore
+ Dec 5, 2018 at 20:00
+1
+I note some other answers use **/__pycache__ whereas this answer apparently recommends __pycache__/ from Github. Is the latter sufficient? Why does anyone use the former? Comments here seem to indicate asterisks are not needed: stackoverflow.com/questions/56309100/… –
+NeilG
+ May 2 at 11:15
+Add a comment
+91
+
+When using buildout I have following in .gitignore (along with *.pyo and *.pyc):
+
+.installed.cfg
+bin
+develop-eggs
+dist
+downloads
+eggs
+parts
+src/*.egg-info
+lib
+lib64
+Thanks to Jacob Kaplan-Moss
+
+Also I tend to put .svn in since we use several SCM-s where I work.
+
+Share
+Improve this answer
+Follow
+answered Sep 15, 2010 at 16:21
+Davor Lucic's user avatar
+Davor Lucic
+29k88 gold badges6666 silver badges7676 bronze badges
+46
+Keeping an svn repo in the same tree as your git repo!? What kind of monster would do such a thing? –
+Daenyth
+ Sep 15, 2010 at 16:37
+@Daenyth giggle, well not really, but I tend to find some leftover .svn directories lying around if I get a component from another source (specially in older components) and also I'm quite lazy so I sometimes copy checkouts instead of exporting stuff from SVN. I once even saw a guy actually committing leftover .svn dirs in GIT. You can run into all kind of weird things when working with silly people. –
+Davor Lucic
+ Sep 15, 2010 at 17:05
+4
+You should probably put the *.svn in your .global_gitignore, not in individual projects. –
+cowlicks
+ Jan 15, 2016 at 20:56
+Might want to consider venv/* too if you use virtualenv. Virtualenv lets you set up a "separate" python environment for each project, so libraries don't overlap or conflict. Also helps prevent the "broken but works on my computer" problem. –
+SilentSteel
+ Jan 1, 2018 at 15:49
+@SilentSteel IME venvs are stored in a central location on the system and not in the actual directory –
+Cruncher
+ May 3, 2020 at 15:37
+Add a comment
+41
+
+Covers most of the general stuff -
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
