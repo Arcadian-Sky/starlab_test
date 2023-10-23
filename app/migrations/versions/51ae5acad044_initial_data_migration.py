@@ -39,7 +39,25 @@ def upgrade():
         Book(name="And Then There Were None", author_id=author_id, date_published="1939-01-01", genre="Mystery"),
         Book(name="Death on the Nile", author_id=author_id, date_published="1937-01-01", genre="Mystery"),
         Book(name="The ABC Murders", author_id=author_id, date_published="1936-01-01", genre="Mystery"),
-        Book(name="Peril at End House", author_id=author_id, date_published="1932-01-01", genre="Mystery")
+        Book(name="Peril at End House", author_id=author_id, date_published="1932-01-01", genre="Mystery"),
+        Book(name="The Mysterious Affair at Styles", author_id=author_id, date_published="1920-01-01", genre="Mystery"),
+        Book(name="The Secret Adversary", author_id=author_id, date_published="1922-01-01", genre="Mystery"),
+        Book(name="The Murder at the Vicarage", author_id=author_id, date_published="1930-01-01", genre="Mystery"),
+        Book(name="Five Little Pigs", author_id=author_id, date_published="1942-01-01", genre="Mystery"),
+        Book(name="Hercule Poirot's Christmas", author_id=author_id, date_published="1938-01-01", genre="Mystery"),
+        Book(name="The Hollow", author_id=author_id, date_published="1946-01-01", genre="Mystery"),
+        Book(name="Curtain", author_id=author_id, date_published="1975-01-01", genre="Mystery"),
+        Book(name="Appointment with Death", author_id=author_id, date_published="1938-01-01", genre="Mystery"),
+        Book(name="Evil Under the Sun", author_id=author_id, date_published="1941-01-01", genre="Mystery"),
+        Book(name="Nemesis", author_id=author_id, date_published="1971-01-01", genre="Mystery"),
+        Book(name="The Body in the Library", author_id=author_id, date_published="1942-01-01", genre="Mystery"),
+        Book(name="The Moving Finger", author_id=author_id, date_published="1942-01-01", genre="Mystery"),
+        Book(name="A Caribbean Mystery", author_id=author_id, date_published="1964-01-01", genre="Mystery"),
+        Book(name="A Pocket Full of Rye", author_id=author_id, date_published="1953-01-01", genre="Mystery"),
+        Book(name="The Pale Horse", author_id=author_id, date_published="1961-01-01", genre="Mystery"),
+        Book(name="One, Two, Buckle My Shoe", author_id=author_id, date_published="1940-01-01", genre="Mystery"),
+        Book(name="The Mirror Crack'd from Side to Side", author_id=author_id, date_published="1962-01-01", genre="Mystery"),
+        Book(name="A Murder Is Announced", author_id=author_id, date_published="1950-01-01", genre="Mystery")
     ]
 
     session.add_all(books)

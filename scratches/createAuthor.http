@@ -1,7 +1,13 @@
-POST http://localhost:8080/create_author
-Content-Type: application/json
+POST http://localhost:8080/author/create
+Content-Type: multipart/form-data; boundary=WebAppBoundary
 
-{
-  "name": "Authorrity",
-  "second_name": "Surname"
-}
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Authorrity
+--WebAppBoundary
+Content-Disposition: form-data; name="second_name"
+Content-Type: text/plain
+
+Surname

@@ -1,9 +1,8 @@
 import os
-from contextlib import asynccontextmanager
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlmodel import SQLModel
+from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
@@ -18,7 +17,7 @@ if DATABASE_URL is None:
 engine = create_async_engine(DATABASE_URL, echo=True)
 
 
-async def createdbConnection():
+async def create_db_connection():
     try:
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
@@ -26,12 +25,6 @@ async def createdbConnection():
         print(f"Error initializing database: {str(e)}")
 
 
-
-async def getDbSession() -> AsyncSession:
+async def get_db_session() -> AsyncSession:
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    # session = async_session()
-    # try:
-    #     yield session
-    # finally:
-    #     await session.close()
     return async_session()

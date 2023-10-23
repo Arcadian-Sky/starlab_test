@@ -1,0 +1,6 @@
+POST http://localhost:8080/book/list
+Content-Type: application/json
+
+{
+  "id": 16
+}

@@ -22,21 +22,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     connection = op.get_bind()
-    try:
-        if not connection.dialect.has_table(connection, 'book'):
-            # Создаем таблицу для модели Book
-            op.create_table(
-                'book',
-                sa.Column('id', sa.Integer(), nullable=False),
-                sa.Column('name', sa.String(length=255), nullable=True),
-                sa.Column('author', sa.String(length=255), nullable=True),
-                sa.Column('date_published', sa.Date(), nullable=True),
-                sa.Column('genre', sa.String(length=255), nullable=True),
-                sa.PrimaryKeyConstraint('id')
-            )
-    except ProgrammingError:
-        pass
-
 
     try:
         if not connection.dialect.has_table(connection, 'author'):
@@ -50,6 +35,25 @@ def upgrade() -> None:
             )
     except ProgrammingError:
         pass
+
+    try:
+        if not connection.dialect.has_table(connection, 'book'):
+            # Создаем таблицу для модели Book
+            op.create_table(
+                'book',
+                sa.Column('id', sa.Integer(), nullable=False),
+                sa.Column('name', sa.String(length=255), nullable=True),
+                sa.Column('author_id', sa.Integer(), nullable=True),
+                sa.Column('date_published', sa.Date(), nullable=True),
+                sa.Column('genre', sa.String(length=255), nullable=True),
+                sa.Column('file_path', sa.String(length=255), nullable=True),
+                sa.PrimaryKeyConstraint('id')
+            )
+    except ProgrammingError:
+        pass
+
+
+
 
 
     pass

@@ -1,11 +1,6 @@
 from datetime import date
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
-
-# DeclBase = declarative_base()
-
 
 class Author(SQLModel, table=True):
     __tablename__ = 'author'
@@ -21,4 +16,6 @@ class Book(SQLModel, table=True):
     author_id: int = Field(sa_column=Column(Integer, ForeignKey("author.id")))
     date_published: date = Field(sa_column=Column(Date))
     genre: str = Field(sa_column=Column(String))
+    file_path: str = Field(sa_column=Column(String))
+
 

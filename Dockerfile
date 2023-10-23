@@ -1,14 +1,16 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
 # set work directory
 WORKDIR /usr/src/app
 
 # install dependencies first
 COPY requirements.txt /usr/src/app
-RUN apk add --no-cache build-base \
-    && apk add --no-cache mpc1-dev \
-    && apk add --no-cache gcc curl \
-    && apk add --no-cache postgresql \
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libmpc-dev \
+    gcc \
+    curl \
+    postgresql \
     && python3 -m pip install --upgrade pip --no-cache-dir \
     && python3 -m pip install -r requirements.txt --no-cache-dir
 

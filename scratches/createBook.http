@@ -1,9 +1,23 @@
-POST http://localhost:8080/create_book
-Content-Type: application/json
+POST http://localhost:8080/book/create
+Content-Type: multipart/form-data; boundary=WebAppBoundary
 
-{
-  "name": "Книгаааа2",
-  "author": "Аффтарр3",
-  "genre": "Ужос5",
-  "date_published": "1997-01-15"
-}
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Книга название
+--WebAppBoundary
+Content-Disposition: form-data; name="author_id"
+Content-Type: text/plain
+
+1
+--WebAppBoundary
+Content-Disposition: form-data; name="genre"
+Content-Type: text/plain
+
+Detective
+--WebAppBoundary
+Content-Disposition: form-data; name="date_published"
+Content-Type: text/plain
+
+1997-01-15

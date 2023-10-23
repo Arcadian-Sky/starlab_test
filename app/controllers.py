@@ -1,15 +1,17 @@
 import os
-from datetime import datetime
-
 import openpyxl
+from datetime import datetime
 from sqlalchemy import or_, and_
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from dbConnect import getDbSession
-from models import *
+from app.db_connect import get_db_session
+from app.models import *
+
+file_upload_dir = 'upload'
 
 
 async def get_data(book_filter: list):
-    db_session = await getDbSession()
+    db_session = await get_db_session()
 
     query_authors = select(Author)
     result_authors = await db_session.execute(query_authors)
@@ -34,6 +36,7 @@ async def get_data(book_filter: list):
         'name': book.name,
         'genre': book.genre,
         'author': book.author_id,
+        'file_path': book.file_path,
         'date_published': book.date_published.isoformat() if book.date_published else None
     } for book in books]
 
@@ -54,7 +57,8 @@ async def create_new_author(session: AsyncSession, name: str, second_name: str):
         return None
 
 
-async def create_new_book(session: AsyncSession, name: str, author_id: int, date_published: str, genre: str):
+async def create_new_book(session: AsyncSession, name: str, author_id: int, date_published: str, genre: str,
+                          file_data: bytes = None):
     try:
         if date_published:
             date_published = datetime.strptime(date_published, '%Y-%m-%d').date()
@@ -62,17 +66,45 @@ async def create_new_book(session: AsyncSession, name: str, author_id: int, date
         new_book = Book(name=name, author_id=author_id, date_published=date_published, genre=genre)
         async with session.begin():
             session.add(new_book)
+
+        if file_data:
+            query = select(Book).filter(Book.id == new_book.id)
+            result = await session.execute(query)
+            book = result.scalars().first()
+
+            book.file_path = file_upload_dir + '/' + str(new_book.id) + '/' + file_data.filename
+            await upload_file(file_upload_dir + '/' + str(new_book.id), file_data)
+
+            await session.commit()
+
+
         return new_book.id
     except Exception as e:
         print(f"Ошибка при создании книги: {e}")
         return None
 
 
+async def upload_file(file_upload_path: str, file_field):
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    full_upload_path = os.path.join(current_directory, file_upload_path)
+
+    if not os.path.exists(full_upload_path):
+        os.makedirs(full_upload_path)
+
+    if file_field and file_field.filename:
+        file_path = os.path.join(full_upload_path, file_field.filename)
+        with open(file_path, 'wb') as f:
+            f.write(file_field.file.read())
+        pass
+    else:
+        raise Exception('No file was sent in the request')
+
+
 async def parse_and_create_book(file_path: str):
     workbook = openpyxl.load_workbook(file_path, data_only=True)
     # sheet = workbook.active
 
-    dbSession = await getDbSession()
+    db_session = await get_db_session()
 
     # Парсим авторов
     sheet = workbook.worksheets[1]
@@ -87,7 +119,7 @@ async def parse_and_create_book(file_path: str):
         name = row[headers['name']] if 'name' in headers else None
         second_name = row[headers['second_name']] if 'second_name' in headers else None
 
-        async with dbSession as session:
+        async with db_session as session:
             author_id = await create_new_author(session, name, second_name)
 
     # Парсим книги
@@ -109,7 +141,7 @@ async def parse_and_create_book(file_path: str):
         if author and author_id is None:
             author_id = session.query(Author).filter(or_(Author.name == author, Author.second_name == author)).first()
 
-        async with dbSession as session:
+        async with db_session as session:
             book_id = await create_new_book(session, name, author_id, date_published, genre)
 
     workbook.close()

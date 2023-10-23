@@ -1,12 +1,16 @@
 import json
-import tempfile
-
-from dotenv import load_dotenv
-import aiohttp_jinja2
-from aiohttp import web
 import jinja2
-from dbConnect import createdbConnection, getDbSession
-from controllers import *
+import tempfile
+import mimetypes
+import aiohttp_jinja2
+from urllib.parse import quote
+
+from aiohttp import web
+from dotenv import load_dotenv
+from aiohttp.web import FileResponse
+
+from app.db_connect import create_db_connection, get_db_session
+from app.controllers import *
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
@@ -21,11 +25,14 @@ async def index(request: web.Request) -> object:
 
 async def create_author(request: web.Request):
     try:
-        data = await request.json()
+        data = await request.post()
         name = data.get('name')
-        second_name = data.get('second_name')
+        second_name = data.get('second_name') if 'second_name' in data else None
 
-        db_session = await getDbSession()
+        if not all([name]):
+            return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
+
+        db_session = await get_db_session()
 
         async with db_session as session:
             author_id = await create_new_author(session, name, second_name)
@@ -37,19 +44,20 @@ async def create_author(request: web.Request):
 
 async def create_book(request: web.Request):
     try:
-        data = await request.json()
-        name = data.get('name')
-        author = data.get('author')
-        date_published = data.get('date_published')
-        genre = data.get('genre')
+        data = await request.post()
+        name = data['name']
+        author = data['author_id'] if 'author_id' in data else None
+        date_published = data['date_published'] if 'date_published' in data else None
+        genre = data['genre'] if 'genre' in data else None
+        file = data['file'] if 'file' in data else None
 
-        if not all([name, author, date_published, genre]):
+        if not all([name]):
             return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 
-        db_session = await getDbSession()
+        db_session = await get_db_session()
 
         async with db_session as session:
-            book_id = await create_new_book(session, name, author, date_published, genre)
+            book_id = await create_new_book(session, name, author, date_published, genre, file)
 
             if book_id is not None:
                 async with db_session as db_session:
@@ -70,6 +78,7 @@ async def create_book(request: web.Request):
                         'genre': book.genre,
                         'author_id': book.author_id,
                         'author': author,
+                        'file_path': book.file_path,
                         'date_published': book.date_published.isoformat() if book.date_published else None
                     })
                 return web.json_response({'book_id': book_id})
@@ -111,7 +120,7 @@ async def create_by_file(request: web.Request):
 
 async def read_books(request: web.Request):
     data = await request.json()
-    id = data.get('id')
+    id = int(data.get('id'))
     name = data.get('name')
     author_id = data.get('author_id')
     date_published_start = data.get('date_published_start')
@@ -141,8 +150,9 @@ async def read_books(request: web.Request):
     data = await get_data(filters)
     return web.json_response(data['books'])
 
+
 async def read_authors(request: web.Request):
-    db_session = await getDbSession()
+    db_session = await get_db_session()
 
     query_authors = select(Author)
     result_authors = await db_session.execute(query_authors)
@@ -156,19 +166,56 @@ async def read_authors(request: web.Request):
 
     return web.json_response(serialized_authors)
 
+
+async def download_file(request):
+    id = int(request.query.get('id', default=None))
+
+    if not all([id]):
+        return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
+
+    db_session = await get_db_session()
+
+    query = select(Book).filter(Book.id == id)
+    result = await db_session.execute(query)
+    book = result.scalars().first()
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+
+    if book.file_path:
+        file_path = os.path.join(current_directory, book.file_path)
+
+        mimetype, _ = mimetypes.guess_type(file_path)
+
+        filename = quote(os.path.basename(file_path))
+
+        if os.path.exists(file_path):
+            if mimetype:
+                return FileResponse(file_path, headers={
+                    "Content-Type": mimetype,
+                    "Content-Disposition": f'attachment; filename="{filename}"'
+                })
+            else:
+                return FileResponse(file_path, headers={
+                    "Content-Type": "application/octet-stream",
+                    "Content-Disposition": f'attachment; filename="{filename}"'
+                })
+        else:
+            return web.Response(text='File not found', status=404)
+    else:
+        return web.Response(text='Book has no File', status=404)
+
+
 async def on_startup(app):
-    await createdbConnection()
+    await create_db_connection()
 
 
 def init_routes(app):
     app.router.add_get('/', index)
     app.router.add_post('/book/create', create_book)
+    app.router.add_get('/book/download', download_file)
     app.router.add_post('/author/create', create_author)
     app.router.add_post('/book/list', read_books)
     app.router.add_get('/author/list', read_authors)
     app.router.add_post('/create_by_file', create_by_file)
-
-    # app.router.add_get('/books/{id}', getBook)
 
     @web.middleware
     async def handle404(request, handler):
