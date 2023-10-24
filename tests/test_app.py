@@ -6,7 +6,8 @@ from datetime import date
 
 
 from app.db_connect import get_db_session, create_db_connection
-from app.main import init_routes, create_author, download_file, create_book, create_by_file, read_books, read_authors
+from app.route import init_routes
+# from app.views import create_author, download_file, create_book, create_by_file, read_books, read_authors
 
 
 @pytest.fixture(scope='function')
@@ -45,29 +46,24 @@ class TestLibraryEndpoints(AioHTTPTestCase):
         data = await response.json()
         assert isinstance(data, list)
 
-    # async def test_create_book(self):
-    #     data = aiohttp.FormData()
-    #     data.add_field('name', 'Test Book')
-    #     response = await self.client.post('/book/create', data=data)
-    #     print(response)
-    #     assert response.status == 200
-    #     data = await response.json()
-    #     assert 'book_id' in data
+    async def test_create_book(self):
+        data = aiohttp.FormData()
+        data.add_field('name', 'Test Book')
+        response = await self.client.post('/book/create', data=data)
+        assert response.status == 200
+        data = await response.json()
+        assert 'book_id' in data
 
-    # async def test_read_books(self):
-    #     data = {
-    #         # 'id': 1,
-    #         # 'name': 'Test Book',
-    #         # 'author_id': 1,
-    #         # 'date_published_start': '2023-01-01',
-    #         # 'date_published_end': '2023-12-31',
-    #         # 'genre': 'Test Genre',
-    #     }
-    #     response = await self.client.post('/book/list', json=data)
-    #     assert response.status == 200
-    #     data = await response.json()
-    #     assert 'books' in data
-
-    # async def test_download_file(self):
-    #     response = await self.client.get('/download_file?id=1')
-    #     assert response.status == 200
+    async def test_read_books(self):
+        data = {
+            # 'id': 1,
+            # 'name': 'Test Book',
+            # 'author_id': 1,
+            # 'date_published_start': '2023-01-01',
+            # 'date_published_end': '2023-12-31',
+            # 'genre': 'Test Genre',
+        }
+        response = await self.client.post('/book/list', json=data)
+        assert response.status == 200
+        data = await response.json()
+        assert isinstance(data, list)

@@ -260,7 +260,8 @@
         formData.append("author_id", document.getElementById("author_id").value);
         formData.append("genre", document.getElementById("genre").value);
         formData.append("date_published", document.getElementById("date_published").value);
-        formData.append("file", document.getElementById("book_file").files[0]); // Здесь получаем выбранный файл
+        if( typeof document.getElementById("book_file").files[0] !== 'undefined')
+            formData.append("file", document.getElementById("book_file").files[0]); // Здесь получаем выбранный файл
 
         $.ajax({
             type: "POST",

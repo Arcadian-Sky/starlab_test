@@ -1,6 +1,5 @@
 import os
 from contextlib import asynccontextmanager
-
 from sqlmodel import SQLModel
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker

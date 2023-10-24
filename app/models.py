@@ -2,6 +2,7 @@ from datetime import date
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 
+
 class Author(SQLModel, table=True):
     __tablename__ = 'author'
     id: int = Field(default=None, primary_key=True, index=True)

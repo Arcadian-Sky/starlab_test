@@ -2,8 +2,5 @@ POST http://localhost:8080/book/list
 Content-Type: application/json
 
 {
-  "name": "Murder",
-  "genre": "Mystery",
-  "date_published_start": "1926-01-01",
-  "date_published_end": "1934-01-01"
+
 }

@@ -68,15 +68,15 @@ async def create_new_book(session: AsyncSession, name: str, author_id: int, date
             session.add(new_book)
             await session.commit()
 
-        if file_data:
-            query = select(Book).filter(Book.id == new_book.id)
-            result = await session.execute(query)
-            book = result.scalars().first()
+            if file_data is not None:
+                async with get_db_session() as session:
+                    query = select(Book).filter(Book.id == new_book.id)
+                    result = await session.execute(query)
+                    book = result.scalars().first()
 
-            book.file_path = file_upload_dir + '/' + str(new_book.id) + '/' + file_data.filename
-            await upload_file(file_upload_dir + '/' + str(new_book.id), file_data)
-            await session.commit()
-
+                    book.file_path = file_upload_dir + '/' + str(new_book.id) + '/' + file_data.filename
+                    await upload_file(file_upload_dir + '/' + str(new_book.id), file_data)
+                    await session.commit()
 
         return new_book.id
     except Exception as e:
