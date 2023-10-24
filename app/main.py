@@ -28,7 +28,6 @@ async def create_author(request: web.Request):
         data = await request.post()
         name = data.get('name')
         second_name = data.get('second_name') if 'second_name' in data else None
-
         if not all([name]):
             return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 

@@ -51,7 +51,7 @@ async def create_new_author(session: AsyncSession, name: str, second_name: str):
         new_row = Author(name=name, second_name=second_name)
         async with session.begin():
             session.add(new_row)
-        return new_row.id
+            return new_row.id
     except Exception as e:
         print(f"Ошибка при создании автора: {e}")
         return None

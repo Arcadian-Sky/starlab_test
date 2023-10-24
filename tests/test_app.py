@@ -1,11 +1,15 @@
+import aiohttp
 import pytest
-from aiohttp import web
 from aiohttp.test_utils import AioHTTPTestCase
+from aiohttp import web
+from datetime import date
+
 from app.db_connect import get_db_session, create_db_connection
 from app.main import init_routes, create_author, download_file, create_book, create_by_file, read_books, read_authors
 
-@pytest.fixture(scope='function')
-async def init():
+
+@pytest.fixture(scope='class')
+async def init_db():
     await create_db_connection()
 
 
@@ -15,21 +19,25 @@ class TestEndpoints(AioHTTPTestCase):
         init_routes(app)
         return app
 
-    async def test_create_author(self):
-        data = {
-            'name': 'Test Author',
-            'second_name': 'Test Second Name'
-        }
+    async def init_db(self):
+        await create_db_connection()
+
+    async def test_create_author(self, init_db):
+        data = aiohttp.FormData()
+        data.add_field('name', 'Test Author')
+        data.add_field('second_name', 'Test Second Name')
         response = await self.client.post('/author/create', data=data)
         assert response.status == 200
         data = await response.json()
+        print(data)
+        print(data['author_id'])
         assert 'author_id' in data
 
-    async def test_create_book(self):
-        data = {
-            'name': 'Test Book',
-        }
+    async def test_create_book(self, init_db):
+        data = aiohttp.FormData()
+        data.add_field('name', 'Test Book')
         response = await self.client.post('/book/create', data=data)
+
         assert response.status == 200
         data = await response.json()
         assert 'book_id' in data
@@ -57,4 +65,3 @@ class TestEndpoints(AioHTTPTestCase):
     async def test_download_file(self):
         response = await self.client.get('/download_file?id=1')
         assert response.status == 200
-
