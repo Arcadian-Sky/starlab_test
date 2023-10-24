@@ -1,4 +1,6 @@
 import os
+from contextlib import asynccontextmanager
+
 from sqlmodel import SQLModel
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
@@ -25,6 +27,8 @@ async def create_db_connection():
         print(f"Error initializing database: {str(e)}")
 
 
+@asynccontextmanager
 async def get_db_session() -> AsyncSession:
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    return async_session()
+    async with async_session() as session:
+        yield session

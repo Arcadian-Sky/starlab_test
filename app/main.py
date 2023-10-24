@@ -31,10 +31,8 @@ async def create_author(request: web.Request):
         if not all([name]):
             return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 
-        db_session = await get_db_session()
-
-        async with db_session as session:
-            author_id = await create_new_author(session, name, second_name)
+        async with get_db_session() as db_session:
+            author_id = await create_new_author(db_session, name, second_name)
             return web.json_response({'author_id': author_id})
 
     except Exception as e:
@@ -53,13 +51,11 @@ async def create_book(request: web.Request):
         if not all([name]):
             return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 
-        db_session = await get_db_session()
-
-        async with db_session as session:
+        async with get_db_session() as session:
             book_id = await create_new_book(session, name, author, date_published, genre, file)
 
             if book_id is not None:
-                async with db_session as db_session:
+                async with get_db_session() as db_session:
                     query = select(Book).filter(Book.id == book_id)
                     result = await db_session.execute(query)
                     book = result.scalars().first()
@@ -151,17 +147,16 @@ async def read_books(request: web.Request):
 
 
 async def read_authors(request: web.Request):
-    db_session = await get_db_session()
+    async with get_db_session() as db_session:
+        query_authors = select(Author)
+        result_authors = await db_session.execute(query_authors)
+        authors = result_authors.scalars().all()
 
-    query_authors = select(Author)
-    result_authors = await db_session.execute(query_authors)
-    authors = result_authors.scalars().all()
-
-    serialized_authors = [{
-        'id': author.id,
-        'name': author.name,
-        'second_name': author.second_name,
-    } for author in authors]
+        serialized_authors = [{
+            'id': author.id,
+            'name': author.name,
+            'second_name': author.second_name,
+        } for author in authors]
 
     return web.json_response(serialized_authors)
 
@@ -172,35 +167,34 @@ async def download_file(request):
     if not all([id]):
         return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 
-    db_session = await get_db_session()
+    async with get_db_session() as db_session:
+        query = select(Book).filter(Book.id == id)
+        result = await db_session.execute(query)
+        book = result.scalars().first()
+        current_directory = os.path.dirname(os.path.abspath(__file__))
 
-    query = select(Book).filter(Book.id == id)
-    result = await db_session.execute(query)
-    book = result.scalars().first()
-    current_directory = os.path.dirname(os.path.abspath(__file__))
+        if book.file_path:
+            file_path = os.path.join(current_directory, book.file_path)
 
-    if book.file_path:
-        file_path = os.path.join(current_directory, book.file_path)
+            mimetype, _ = mimetypes.guess_type(file_path)
 
-        mimetype, _ = mimetypes.guess_type(file_path)
+            filename = quote(os.path.basename(file_path))
 
-        filename = quote(os.path.basename(file_path))
-
-        if os.path.exists(file_path):
-            if mimetype:
-                return FileResponse(file_path, headers={
-                    "Content-Type": mimetype,
-                    "Content-Disposition": f'attachment; filename="{filename}"'
-                })
+            if os.path.exists(file_path):
+                if mimetype:
+                    return FileResponse(file_path, headers={
+                        "Content-Type": mimetype,
+                        "Content-Disposition": f'attachment; filename="{filename}"'
+                    })
+                else:
+                    return FileResponse(file_path, headers={
+                        "Content-Type": "application/octet-stream",
+                        "Content-Disposition": f'attachment; filename="{filename}"'
+                    })
             else:
-                return FileResponse(file_path, headers={
-                    "Content-Type": "application/octet-stream",
-                    "Content-Disposition": f'attachment; filename="{filename}"'
-                })
+                return web.Response(text='File not found', status=404)
         else:
-            return web.Response(text='File not found', status=404)
-    else:
-        return web.Response(text='Book has no File', status=404)
+            return web.Response(text='Book has no File', status=404)
 
 
 async def on_startup(app):
