@@ -11,7 +11,7 @@ from aiohttp import web
 from dotenv import load_dotenv
 from aiohttp.web import FileResponse
 from app.db_connect import create_db_connection, get_db_session
-from app.route import init_routes
+from app.routes import init_routes
 
 
 # Загрузка переменных окружения из файла .env
