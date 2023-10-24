@@ -1,4 +1,4 @@
-#**Тестовое задание.**
+#Тестовое задание.
 
 ##Стек:
 python, aiohttp, postgres, sqlachemy
