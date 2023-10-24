@@ -1,11 +1,7 @@
-import json
 import os
 
 import jinja2
-import tempfile
-import mimetypes
 import aiohttp_jinja2
-from urllib.parse import quote
 
 from aiohttp import web
 from dotenv import load_dotenv

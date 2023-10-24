@@ -10,11 +10,6 @@ from app.routes import init_routes
 # from app.views import create_author, download_file, create_book, create_by_file, read_books, read_authors
 
 
-@pytest.fixture(scope='function')
-async def init_db():
-    await create_db_connection()
-
-
 class TestLibraryEndpoints(AioHTTPTestCase):
 
     async def get_application(self):
