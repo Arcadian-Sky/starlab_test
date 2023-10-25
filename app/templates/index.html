@@ -255,6 +255,18 @@
             alert("Пожалуйста, заполните наименование книги");
             return;
         }
+        if (!document.getElementById("author_id").value) {
+            alert("Пожалуйста, заполните автора книги");
+            return;
+        }
+        if (!document.getElementById("genre").value) {
+            alert("Пожалуйста, заполните автора книги");
+            return;
+        }
+        if (!document.getElementById("date_published").value) {
+            alert("Пожалуйста, заполните дата публикации книги");
+            return;
+        }
 
         formData.append("name", document.getElementById("name").value);
         formData.append("author_id", document.getElementById("author_id").value);

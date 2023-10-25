@@ -45,7 +45,7 @@ async def create_book(request: web.Request):
         genre = data['genre'] if 'genre' in data else None
         file = data['file'] if 'file' in data else None
 
-        if not all([name]):
+        if not all([name, author, date_published, genre]):
             return web.json_response({'error': 'Missing or invalid data in the request'}, status=400)
 
         async with get_db_session() as session:
