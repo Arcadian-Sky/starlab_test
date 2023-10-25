@@ -100,51 +100,65 @@ async def upload_file(file_upload_path: str, file_field):
         raise Exception('No file was sent in the request')
 
 
-async def parse_and_create_book(file_path: str):
-    workbook = openpyxl.load_workbook(file_path, data_only=True)
-    # sheet = workbook.active
-
+async def parse_and_decline_book(file_path: str):
     async with get_db_session() as db_session:
-        # Парсим авторов
-        sheet = workbook.worksheets[1]
+        workbook = openpyxl.load_workbook(file_path, data_only=True)
+        author_ids = []
+        books_names = []
 
-        headers = {}
-        for row in sheet.iter_rows(min_row=1, max_row=1, values_only=True):
-            for idx, cell_value in enumerate(row):
-                headers[cell_value] = idx
+        for sheet in workbook.worksheets:
+            if sheet.title == 'author':
+                author_ids.extend(await parse_authors(sheet, db_session))
+            elif sheet.title == 'name':
+                books_names.extend(await parse_books(sheet, db_session))
 
-        # Пройтись по строкам и столбцам для чтения и записи данных
-        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
-            name = row[headers['name']] if 'name' in headers else None
-            second_name = row[headers['second_name']] if 'second_name' in headers else None
-
-            async with db_session as session:
-                author_id = await create_new_author(session, name, second_name)
-
-        # Парсим книги
-        sheet = workbook.worksheets[0]
-        # Парсим заголовки колонок
-        headers = {}
-        for row in sheet.iter_rows(min_row=1, max_row=1, values_only=True):
-            for idx, cell_value in enumerate(row):
-                headers[cell_value] = idx
-
-        # Пройтись по строкам и столбцам для чтения и записи данных
-        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
-            name = row[headers['name']] if 'name' in headers else None
-            author = row[headers['author']] if 'author' in headers else None
-            author_id = row[headers['author_id']] if 'author_id' in headers else None
-            date_published = row[headers['date_published']] if 'date_published' in headers else None
-            genre = row[headers['genre']] if 'genre' in headers else None
-
-            if author and author_id is None:
-                author_id = session.query(Author).filter(or_(Author.name == author, Author.second_name == author)).first()
-
-            async with db_session as session:
-                book_id = await create_new_book(session, name, author_id, date_published, genre)
-
-        workbook.close()
+        book_filter = [Book.name.in_(books_names), Book.author_id.in_(author_ids)]
+        query = select(Book).filter(or_(*book_filter))
+        result = await db_session.execute(query)
+        books = result.scalars().all()
+        for book in books:
+            book.file_path = None
+            await db_session.commit()
 
         os.remove(file_path)
+        return books
 
-    return None
+async def parse_authors(sheet, db_session):
+    headers = get_headers(sheet)
+    authors = []
+    author_filters = []
+
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
+        name = row[headers.get('name')]  if 'name' in headers else None
+        second_name = row[headers.get('second_name')]  if 'second_name' in headers else None
+        if name or second_name:
+            if name:
+                author_filters.append(Author.name.like(f"%{name}%"))
+            if second_name:
+                author_filters.append(Author.second_name.like(f"%{second_name}%"))
+
+    query = select(Author).filter(or_(*author_filters))
+    result = await db_session.execute(query)
+    authors.extend(result.scalars().all())
+
+    author_ids = [author.id for author in authors]
+
+    return author_ids
+
+async def parse_books(sheet, db_session):
+    headers = get_headers(sheet)
+    book_names = []
+
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
+        name = row[headers.get('name')]
+        if name:
+            book_names.append(str(name))
+
+    return book_names
+
+def get_headers(sheet):
+    headers = {}
+    for row in sheet.iter_rows(min_row=1, max_row=1, values_only=True):
+        for idx, cell_value in enumerate(row):
+            headers[cell_value] = idx
+    return headers

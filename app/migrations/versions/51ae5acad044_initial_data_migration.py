@@ -26,6 +26,14 @@ Base = declarative_base()
 def upgrade():
     bind = op.get_bind()
     session = sa.orm.Session(bind=bind)
+    author = Author(name="George", second_name="Orwell")
+    session.add(author)
+    author = Author(name="Stephen", second_name="King")
+    session.add(author)
+    author = Author(name="Theodore", second_name="Dreiser")
+    session.add(author)
+    author = Author(name="George Orwell", second_name="Blair")
+    session.add(author)
 
     # Создаем автора Agatha Christie
     agatha_christie = Author(name="Agatha", second_name="Christie")

@@ -79,7 +79,7 @@ async def create_book(request: web.Request):
         return web.json_response({'error': 'Invalid JSON in the request'}, status=400)
 
 
-async def create_by_file(request: web.Request):
+async def decline_by_file(request: web.Request):
     try:
         data = await request.post()
         file = data['file']
@@ -100,7 +100,7 @@ async def create_by_file(request: web.Request):
             with open(temp_file_path, 'wb') as f:
                 f.write(file.file.read())  # Чтение и запись содержимого файла
 
-            res = await parse_and_create_book(temp_file_path)
+            res = await parse_and_decline_book(temp_file_path)
             return web.json_response({'message': 'File uploaded and processed successfully'})
 
     except Exception as e:

@@ -62,3 +62,9 @@ class TestLibraryEndpoints(AioHTTPTestCase):
         assert response.status == 200
         data = await response.json()
         assert isinstance(data, list)
+
+    async def test_finish(self):
+        async with get_db_session() as session:
+            await session.execute('DELETE FROM book')
+            await session.execute('DELETE FROM author')
+            await session.commit()

@@ -9,7 +9,7 @@ def init_routes(app):
     app.router.add_post('/author/create', create_author)
     app.router.add_post('/book/list', read_books)
     app.router.add_get('/author/list', read_authors)
-    app.router.add_post('/create_by_file', create_by_file)
+    app.router.add_post('/decline_by_file', decline_by_file)
 
     @web.middleware
     async def handle404(request, handler):
